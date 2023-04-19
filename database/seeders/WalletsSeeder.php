@@ -16,7 +16,7 @@ class WalletsSeeder extends Seeder
     public function run(): void
     {
         $userIds = User::select('id')->pluck('id')->toArray();
-        $walletCurrencies = [User::UAH, User::USD, User::EUR];
+        $walletCurrencies = [Wallet::UAH, Wallet::USD, Wallet::EUR];
 
         foreach ($userIds as $userId) {
             $randomCurrenciesCount = rand(0, 3);

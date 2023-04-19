@@ -10,6 +10,10 @@ class Wallet extends Model
 {
     use HasFactory;
 
+    public const UAH = "UAH";
+    public const USD = "USD";
+    public const EUR = "EUR";
+
     protected $fillable = [
         'user_id',
         'currency',
