@@ -13,7 +13,14 @@ return new class extends Migration
     {
         Schema::create('exchange_requests', function (Blueprint $table) {
             $table->id();
-
+            $table->foreignId('user_id')
+                ->constrained('users');
+            $table->string('currency_give');
+            $table->decimal('amount_give', 10);
+            $table->string('currency_get');
+            $table->decimal('amount_get', 10);
+            $table->boolean('is_done');
+            $table->decimal('fee', 10)->nullable();
             $table->timestamps();
         });
     }
