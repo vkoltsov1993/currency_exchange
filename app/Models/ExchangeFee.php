@@ -10,6 +10,7 @@ class ExchangeFee extends Model
     use HasFactory;
 
     protected $fillable = [
-        'fee'
+        'fee',
+        'exchange_request_id',
     ];
 }

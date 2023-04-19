@@ -2,6 +2,7 @@
 
 namespace App\Services\ExchangeRequestService;
 
+use App\Models\ExchangeFee;
 use App\Models\ExchangeRequest;
 use App\Models\User;
 use App\Models\Wallet;
@@ -49,8 +50,6 @@ class ExchangeRequestHandler implements ExchangeRequestService
             $rate = 1;
         }
 
-        $fee = $this->data['amount_get'] * 0.02;
-
         $exchangeRequest = ExchangeRequest::query()
             ->whereNot('user_id', $this->user->id)
             ->where(function (Builder $builder) {
@@ -91,6 +90,11 @@ class ExchangeRequestHandler implements ExchangeRequestService
             $walletAdd->save();
             $walletSub->amount -= $this->data['amount_give'];
             $walletSub->save();
+
+            ExchangeFee::create([
+                'exchange_request_id' => $exchangeRequest->id,
+                'fee' => $this->data['amount_get'] * 0.02,
+            ]);
         } else {
             $exchangeRequest = ExchangeRequest::create([
                 'user_id' => $this->user->id,
@@ -99,7 +103,6 @@ class ExchangeRequestHandler implements ExchangeRequestService
                 'currency_get' => $this->data['currency_get'],
                 'amount_get' => $this->data['amount_get'],
                 'rate' => $rate,
-                'fee' => $fee,
             ]);
         }
 
