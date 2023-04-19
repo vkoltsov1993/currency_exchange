@@ -75,27 +75,73 @@ class StoreExchangeRequestService implements ExchangeRequestService
             $errorMessage = "Exchange Request id:$exchangeRequest->id has been already applied";
             throw new ExchangeRequestHasBeenAlreadyAppliedException($errorMessage, 422);
         }
-        $exchangeCurrencyGive = $exchangeRequest->currency_give;
-        $exchangeAmountGive = (float)$exchangeRequest->amount_give;
-        $availableMoney = (float)$user->wallets()
-            ->where('currency', $exchangeCurrencyGive)
+        $exchangeCurrencyRequestOwner = $exchangeRequest->currency_give;
+        $exchangeAmountRequestOwner = (float)$exchangeRequest->amount_give;
+
+
+        $availableOwnerMoney = (float)$exchangeRequest->user->wallets()
+            ->where('currency', $exchangeCurrencyRequestOwner)
             ->value('amount');
 
-        if ($availableMoney < $exchangeAmountGive) {
-            $errorMessage = "User doesn't have enough money in wallet.";
-            $errorMessage .= "\nThe are $availableMoney $exchangeCurrencyGive available";
+        if ($availableOwnerMoney < $exchangeAmountRequestOwner) {
+            $errorMessage = "Request owner doesn't have enough money";
             throw new UserDoesNotHaveEnoughMoneyException($errorMessage, 422);
         }
+
+        $exchangeCurrencyRequestApplier = $exchangeRequest->currency_get;
+        $exchangeAmountRequestApplier = (float)$exchangeRequest->amount_get;
+
+        $availableApplierMoney = (float)$user->wallets()
+            ->where('currency', $exchangeCurrencyRequestApplier)
+            ->value('amount');
+
+        if ($availableApplierMoney < $exchangeAmountRequestApplier) {
+            $errorMessage = "You don't have enough money";
+            throw new UserDoesNotHaveEnoughMoneyException($errorMessage, 422);
+        }
+
+
         DB::beginTransaction();
 
         try {
             $exchangeRequest->is_apply = true;
             $exchangeRequest->save();
-            ExchangeFee::create([
-                'exchange_request_id' => $exchangeRequest->id,
-                'currency' => $exchangeCurrencyGive,
-                'fee' => $exchangeAmountGive * 0.02,
-            ]);
+            $feeGive = $exchangeAmountRequestOwner * 0.02;
+            $ownerGetWallet = $exchangeRequest->user
+                ->wallets()
+                ->where('currency', $exchangeCurrencyRequestOwner)
+                ->first();
+            $ownerGetWallet->amount = ($ownerGetWallet->amount + $exchangeAmountRequestOwner) - $feeGive;
+            $ownerGetWallet->save();
+
+            $ownerGiveWallet = $exchangeRequest->user
+                ->wallets()
+                ->where('currency', $exchangeCurrencyRequestApplier)
+                ->first();
+
+            $ownerGiveWallet->amount += $exchangeAmountRequestApplier;
+            $ownerGiveWallet->save();
+
+            $usersWallet = $user->wallets()
+                ->where('currency', $exchangeCurrencyRequestOwner)
+                ->first();
+
+            $usersWallet->amount -= $exchangeAmountRequestOwner;
+            $usersWallet->save();
+
+            $fees = [
+                [
+                    'exchange_request_id' => $exchangeRequest->id,
+                    'currency' => $exchangeCurrencyRequestOwner,
+                    'fee' => $exchangeAmountRequestOwner * 0.02,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ],
+
+            ];
+            DB::table('exchange_fees')
+                ->insert($fees);
+
             DB::commit();
         } catch (\Exception $exception) {
             DB::rollBack();
