@@ -12,6 +12,11 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    public const UAH = "UAH";
+    public const USD = "USD";
+    public const EUR = "EUR";
+
+
     /**
      * The attributes that are mass assignable.
      *
