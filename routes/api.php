@@ -17,17 +17,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-//Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//    return $request->user();
-//});
-
-Route::group(['prefix' => 'tokens', 'as' => 'tokens'], function (){
+Route::group(['prefix' => 'tokens', 'as' => 'tokens'], function () {
     Route::post('create', [AuthController::class, 'createToken']);
 });
 
-Route::group(['middleware' => 'auth:sanctum'], function (){
-    Route::post('store/{userId}', [ExchangeRequestController::class, 'store']);
+Route::group(['middleware' => 'auth:sanctum'], function () {
+    Route::post('store', [ExchangeRequestController::class, 'store']);
     Route::get('exchange-requests', [ExchangeRequestController::class, 'list']);
-    Route::post('apply/{userId}', [ExchangeRequestController::class, 'apply']);
+    Route::post('apply', [ExchangeRequestController::class, 'apply']);
     Route::get('report', FeeReportController::class);
 });

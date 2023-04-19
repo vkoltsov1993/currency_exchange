@@ -17,12 +17,18 @@ use Illuminate\Http\Request;
 
 class ExchangeRequestController extends Controller
 {
-    public function store(int $userId, ExchangeCurrencyRequest $request, ExchangeRequestService $exchangeRequestService)
+    public function __construct(
+        private readonly ExchangeRequestService $exchangeRequestService,
+    ) {
+        //
+    }
+
+    public function store(ExchangeCurrencyRequest $request)
     {
         try {
             $data = $request->validated();
-            $user = User::findOrFail($userId);
-            $exchangeRequest = $exchangeRequestService->store($user, $data);
+            $user = auth()->user();
+            $exchangeRequest = $this->exchangeRequestService->store($user, $data);
             return (new ExchangeRequestResource($exchangeRequest))
                 ->response()
                 ->setStatusCode(201);
@@ -42,14 +48,14 @@ class ExchangeRequestController extends Controller
         return ExchangeRequestResource::collection($exchangeRequestRepository->all());
     }
 
-    public function apply(int $userId, ExchangeRequestApplyRequest $request, ExchangeRequestService $exchangeRequestService): JsonResponse
+    public function apply(ExchangeRequestApplyRequest $request): JsonResponse
     {
         try {
-            $user = User::find($userId);
+            $user = auth()->user();
             $data = $request->validated();
             $exchangeRequestId = (int)$data['exchange_request_id'];
             $exchangeRequest = ExchangeRequest::findOrFail($exchangeRequestId);
-            $exchangeRequestService->apply($exchangeRequest, $user);
+            $this->exchangeRequestService->apply($exchangeRequest, $user);
             return response()->json([
                 'message' => "Exchange Request id:$exchangeRequest->id successfully applied",
             ]);
