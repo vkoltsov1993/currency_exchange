@@ -12,6 +12,7 @@ use App\Models\ExchangeRequest;
 use App\Models\User;
 use App\Repositories\ExchangeRequestRepository;
 use App\Services\ExchangeRequestService\ExchangeRequestService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ExchangeRequestController extends Controller
@@ -41,7 +42,7 @@ class ExchangeRequestController extends Controller
         return ExchangeRequestResource::collection($exchangeRequestRepository->all());
     }
 
-    public function apply(int $userId, ExchangeRequestApplyRequest $request, ExchangeRequestService $exchangeRequestService)
+    public function apply(int $userId, ExchangeRequestApplyRequest $request, ExchangeRequestService $exchangeRequestService): JsonResponse
     {
         try {
             $user = User::find($userId);
