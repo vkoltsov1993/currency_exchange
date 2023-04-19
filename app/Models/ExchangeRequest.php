@@ -17,7 +17,6 @@ class ExchangeRequest extends Model
         'amount_give',
         'currency_get',
         'amount_get',
-        'rate',
     ];
 
     public function user(): BelongsTo

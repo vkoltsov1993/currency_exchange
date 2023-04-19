@@ -19,4 +19,4 @@ use Illuminate\Support\Facades\Route;
 //    return $request->user();
 //});
 
-Route::post('exchange/{userId}', [ExchangeRequestController::class, 'exchange']);
+Route::post('store/{userId}', [ExchangeRequestController::class, 'store']);

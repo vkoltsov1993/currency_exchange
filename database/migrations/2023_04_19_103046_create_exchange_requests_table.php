@@ -19,7 +19,6 @@ return new class extends Migration
             $table->decimal('amount_give', 10);
             $table->string('currency_get');
             $table->decimal('amount_get', 10);
-            $table->decimal('rate', 10);
             $table->timestamps();
         });
     }
