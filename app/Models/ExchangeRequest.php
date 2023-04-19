@@ -16,6 +16,7 @@ class ExchangeRequest extends Model
         'amount_give',
         'currency_get',
         'amount_get',
+        'rate',
         'is_done',
         'fee',
     ];
