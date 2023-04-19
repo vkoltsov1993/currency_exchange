@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\ApplyRequestException;
+use App\Exceptions\AttemptToApplyOwnRequestException;
 use App\Exceptions\ExchangeRequestHasBeenAlreadyAppliedException;
 use App\Exceptions\UserDoesNotHaveEnoughMoneyException;
 use App\Exceptions\UserDoesNotHaveWalletException;
@@ -59,7 +61,7 @@ class ExchangeRequestController extends Controller
             return response()->json([
                 'message' => "Exchange Request id:$exchangeRequest->id successfully applied",
             ]);
-        } catch (UserDoesNotHaveEnoughMoneyException|ExchangeRequestHasBeenAlreadyAppliedException $exception) {
+        } catch (ApplyRequestException $exception) {
             return response()->json([
                 'error' => $exception->getMessage(),
             ], $exception->getCode());

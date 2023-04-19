@@ -4,7 +4,7 @@ namespace App\Exceptions;
 
 use Exception;
 
-class UserDoesNotHaveEnoughMoneyException extends Exception
+class UserDoesNotHaveEnoughMoneyException extends ApplyRequestException
 {
     //
 }

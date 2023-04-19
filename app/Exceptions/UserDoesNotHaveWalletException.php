@@ -4,7 +4,7 @@ namespace App\Exceptions;
 
 use Exception;
 
-class UserDoesNotHaveWalletException extends Exception
+class UserDoesNotHaveWalletException extends ApplyRequestException
 {
 
 }

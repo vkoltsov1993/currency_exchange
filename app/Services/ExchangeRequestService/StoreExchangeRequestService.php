@@ -2,6 +2,7 @@
 
 namespace App\Services\ExchangeRequestService;
 
+use App\Exceptions\AttemptToApplyOwnRequestException;
 use App\Exceptions\ExchangeRequestHasBeenAlreadyAppliedException;
 use App\Exceptions\UserDoesNotHaveEnoughMoneyException;
 use App\Exceptions\UserDoesNotHaveWalletException;
@@ -66,6 +67,7 @@ class StoreExchangeRequestService implements ExchangeRequestService
      * @param ExchangeRequest $exchangeRequest
      * @param User $user
      * @return bool
+     * @throws AttemptToApplyOwnRequestException
      * @throws ExchangeRequestHasBeenAlreadyAppliedException
      * @throws UserDoesNotHaveEnoughMoneyException
      * @throws UserDoesNotHaveWalletException
@@ -76,6 +78,12 @@ class StoreExchangeRequestService implements ExchangeRequestService
             $errorMessage = "Exchange Request id:$exchangeRequest->id has been already applied";
             throw new ExchangeRequestHasBeenAlreadyAppliedException($errorMessage, 422);
         }
+
+        if ($exchangeRequest->user->id == $user->id) {
+            $message = "You can't apply your exchange request";
+            throw new AttemptToApplyOwnRequestException($message, 422);
+        }
+
         $ownerGiveCurrency = $exchangeRequest->currency_give;
         $ownerGiveAmount = (float)$exchangeRequest->amount_give;
         $ownerGetCurrency = $exchangeRequest->currency_get;
@@ -96,7 +104,7 @@ class StoreExchangeRequestService implements ExchangeRequestService
 
         if (! $isApplierHaveWallet) {
             $message = "You don't have $ownerGetCurrency wallet!";
-            throw new UserDoesNotHaveWalletException($message);
+            throw new UserDoesNotHaveWalletException($message, 422);
         }
 
         $applierAvailableMoney = (float)$user->wallets()
