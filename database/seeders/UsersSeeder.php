@@ -13,7 +13,7 @@ class UsersSeeder extends Seeder
      */
     public function run(): void
     {
-        if (!User::exists()){
+        if (! User::exists()) {
             User::factory()
                 ->count(10)
                 ->create();
