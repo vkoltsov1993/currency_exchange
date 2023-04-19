@@ -20,7 +20,7 @@ class StoreExchangeRequestService implements ExchangeRequestService
      * @return ExchangeRequest
      * @throws UserDoesNotHaveWalletException
      */
-    public function handle(User $user, array $data): ExchangeRequest
+    public function store(User $user, array $data): ExchangeRequest
     {
         $this->currencyGive = $data['currency_give'];
         $this->currencyGet = $data['currency_get'];
@@ -56,5 +56,10 @@ class StoreExchangeRequestService implements ExchangeRequestService
             $errorMessage .= implode(', ', $notExistsCurrencies);
             throw new UserDoesNotHaveWalletException($errorMessage, 422);
         }
+    }
+
+    public function apply(ExchangeRequest $exchangeRequest, User $user): bool
+    {
+
     }
 }

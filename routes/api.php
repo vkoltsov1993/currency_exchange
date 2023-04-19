@@ -20,3 +20,5 @@ use Illuminate\Support\Facades\Route;
 //});
 
 Route::post('store/{userId}', [ExchangeRequestController::class, 'store']);
+Route::get('exchange-requests', [ExchangeRequestController::class, 'list']);
+Route::post('apply/{userId}', [ExchangeRequestController::class, 'apply']);

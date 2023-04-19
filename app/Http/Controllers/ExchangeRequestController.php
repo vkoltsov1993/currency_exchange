@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\UserDoesNotHaveWalletException;
 use App\Http\Requests\ExchangeCurrencyRequest;
+use App\Http\Requests\ExchangeRequestApplyRequest;
 use App\Http\Resources\ExchangeRequestResource;
 use App\Models\User;
+use App\Repositories\ExchangeRequestRepository;
 use App\Services\ExchangeRequestService\ExchangeRequestService;
 use Illuminate\Http\Request;
 
@@ -29,5 +31,15 @@ class ExchangeRequestController extends Controller
                 'error' => "Server error",
             ], 422);
         }
+    }
+
+    public function list(ExchangeRequestRepository $exchangeRequestRepository)
+    {
+        return ExchangeRequestResource::collection($exchangeRequestRepository->all());
+    }
+
+    public function apply(int $userId, ExchangeRequestApplyRequest $request)
+    {
+        dd($request->validated());
     }
 }

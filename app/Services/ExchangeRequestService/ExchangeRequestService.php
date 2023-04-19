@@ -12,5 +12,7 @@ interface ExchangeRequestService
      * @param array $data
      * @return ExchangeRequest
      */
-    public function handle(User $user, array $data): ExchangeRequest;
+    public function store(User $user, array $data): ExchangeRequest;
+
+    public function apply(ExchangeRequest $exchangeRequest, User $user): bool;
 }
