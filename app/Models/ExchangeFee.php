@@ -12,5 +12,6 @@ class ExchangeFee extends Model
     protected $fillable = [
         'fee',
         'exchange_request_id',
+        'currency',
     ];
 }

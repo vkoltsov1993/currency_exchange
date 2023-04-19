@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('exchange_request_id')
                 ->constrained('exchange_requests');
+            $table->string('currency');
             $table->decimal('fee', 10)->nullable();
             $table->timestamps();
         });

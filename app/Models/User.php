@@ -51,4 +51,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Wallet::class);
     }
+
+    public function exchangeRequests(): HasMany
+    {
+        return $this->hasMany(ExchangeRequest::class);
+    }
 }
