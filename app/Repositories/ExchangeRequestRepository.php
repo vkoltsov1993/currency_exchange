@@ -27,6 +27,7 @@ class ExchangeRequestRepository
         if ($userIdExcept) {
             $exchangeRequestBuilder->whereNot('user_id', $userIdExcept);
         }
-        return $exchangeRequestBuilder->get();
+        return $exchangeRequestBuilder->where('is_apply', false)
+            ->get();
     }
 }

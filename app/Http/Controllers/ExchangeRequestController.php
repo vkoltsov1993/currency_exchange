@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\ExchangeRequestHasBeenAlreadyAppliedException;
+use App\Exceptions\UserDoesNotHaveEnoughMoneyException;
 use App\Exceptions\UserDoesNotHaveWalletException;
 use App\Http\Requests\ExchangeCurrencyRequest;
 use App\Http\Requests\ExchangeRequestApplyRequest;
 use App\Http\Resources\ExchangeRequestResource;
+use App\Models\ExchangeRequest;
 use App\Models\User;
 use App\Repositories\ExchangeRequestRepository;
 use App\Services\ExchangeRequestService\ExchangeRequestService;
@@ -18,7 +21,7 @@ class ExchangeRequestController extends Controller
         try {
             $data = $request->validated();
             $user = User::findOrFail($userId);
-            $exchangeRequest = $exchangeRequestService->handle($user, $data);
+            $exchangeRequest = $exchangeRequestService->store($user, $data);
             return (new ExchangeRequestResource($exchangeRequest))
                 ->response()
                 ->setStatusCode(201);
@@ -38,8 +41,21 @@ class ExchangeRequestController extends Controller
         return ExchangeRequestResource::collection($exchangeRequestRepository->all());
     }
 
-    public function apply(int $userId, ExchangeRequestApplyRequest $request)
+    public function apply(int $userId, ExchangeRequestApplyRequest $request, ExchangeRequestService $exchangeRequestService)
     {
-        dd($request->validated());
+        try {
+            $user = User::find($userId);
+            $data = $request->validated();
+            $exchangeRequestId = (int)$data['exchange_request_id'];
+            $exchangeRequest = ExchangeRequest::findOrFail($exchangeRequestId);
+            $exchangeRequestService->apply($exchangeRequest, $user);
+            return response()->json([
+                'message' => "Exchange Request id:$exchangeRequest->id successfully applied",
+            ]);
+        } catch (UserDoesNotHaveEnoughMoneyException|ExchangeRequestHasBeenAlreadyAppliedException $exception) {
+            return response()->json([
+                'error' => $exception->getMessage(),
+            ], $exception->getCode());
+        }
     }
 }

@@ -2,9 +2,13 @@
 
 namespace App\Services\ExchangeRequestService;
 
+use App\Exceptions\ExchangeRequestHasBeenAlreadyAppliedException;
+use App\Exceptions\UserDoesNotHaveEnoughMoneyException;
 use App\Exceptions\UserDoesNotHaveWalletException;
+use App\Models\ExchangeFee;
 use App\Models\ExchangeRequest;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 class StoreExchangeRequestService implements ExchangeRequestService
 {
@@ -58,8 +62,45 @@ class StoreExchangeRequestService implements ExchangeRequestService
         }
     }
 
+    /**
+     * @param ExchangeRequest $exchangeRequest
+     * @param User $user
+     * @return bool
+     * @throws ExchangeRequestHasBeenAlreadyAppliedException
+     * @throws UserDoesNotHaveEnoughMoneyException
+     */
     public function apply(ExchangeRequest $exchangeRequest, User $user): bool
     {
+        if ($exchangeRequest->is_apply) {
+            $errorMessage = "Exchange Request id:$exchangeRequest->id has been already applied";
+            throw new ExchangeRequestHasBeenAlreadyAppliedException($errorMessage, 422);
+        }
+        $exchangeCurrencyGive = $exchangeRequest->currency_give;
+        $exchangeAmountGive = (float)$exchangeRequest->amount_give;
+        $availableMoney = (float)$user->wallets()
+            ->where('currency', $exchangeCurrencyGive)
+            ->value('amount');
 
+        if ($availableMoney < $exchangeAmountGive) {
+            $errorMessage = "User doesn't have enough money in wallet.";
+            $errorMessage .= "\nThe are $availableMoney $exchangeCurrencyGive available";
+            throw new UserDoesNotHaveEnoughMoneyException($errorMessage, 422);
+        }
+        DB::beginTransaction();
+
+        try {
+            $exchangeRequest->is_apply = true;
+            $exchangeRequest->save();
+            ExchangeFee::create([
+                'exchange_request_id' => $exchangeRequest->id,
+                'currency' => $exchangeCurrencyGive,
+                'fee' => $exchangeAmountGive * 0.02,
+            ]);
+            DB::commit();
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            throw $exception;
+        }
+        return true;
     }
 }
