@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ExchangeRequestController;
 use App\Http\Controllers\FeeReportController;
 use Illuminate\Http\Request;
@@ -20,7 +21,13 @@ use Illuminate\Support\Facades\Route;
 //    return $request->user();
 //});
 
-Route::post('store/{userId}', [ExchangeRequestController::class, 'store']);
-Route::get('exchange-requests', [ExchangeRequestController::class, 'list']);
-Route::post('apply/{userId}', [ExchangeRequestController::class, 'apply']);
-Route::get('report', FeeReportController::class);
+Route::group(['prefix' => 'tokens', 'as' => 'tokens'], function (){
+    Route::post('create', [AuthController::class, 'createToken']);
+});
+
+Route::group(['middleware' => 'auth:sanctum'], function (){
+    Route::post('store/{userId}', [ExchangeRequestController::class, 'store']);
+    Route::get('exchange-requests', [ExchangeRequestController::class, 'list']);
+    Route::post('apply/{userId}', [ExchangeRequestController::class, 'apply']);
+    Route::get('report', FeeReportController::class);
+});
